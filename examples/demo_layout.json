@@ -1,0 +1,42 @@
+{
+  "frame_step": 1,
+  "min_card_score": 0.82,
+  "min_text_score": 0.50,
+  "community": [
+    { "name": "board_1", "rect": { "x": 442, "y": 286, "w": 72, "h": 100 } },
+    { "name": "board_2", "rect": { "x": 526, "y": 286, "w": 72, "h": 100 } },
+    { "name": "board_3", "rect": { "x": 610, "y": 286, "w": 72, "h": 100 } },
+    { "name": "board_4", "rect": { "x": 694, "y": 286, "w": 72, "h": 100 } },
+    { "name": "board_5", "rect": { "x": 778, "y": 286, "w": 72, "h": 100 } }
+  ],
+  "players": [
+    {
+      "name": "ALICE",
+      "cards": [
+        { "name": "alice_1", "rect": { "x": 290, "y": 506, "w": 72, "h": 100 } },
+        { "name": "alice_2", "rect": { "x": 374, "y": 506, "w": 72, "h": 100 } }
+      ]
+    },
+    {
+      "name": "BOB",
+      "cards": [
+        { "name": "bob_1", "rect": { "x": 836, "y": 506, "w": 72, "h": 100 } },
+        { "name": "bob_2", "rect": { "x": 920, "y": 506, "w": 72, "h": 100 } }
+      ]
+    }
+  ],
+  "texts": [
+    {
+      "name": "pot",
+      "kind": "pot",
+      "rect": { "x": 560, "y": 212, "w": 160, "h": 44 },
+      "candidates": ["POT 30", "POT 90", "POT 150", "POT 270", "POT 390"]
+    },
+    {
+      "name": "action",
+      "kind": "action",
+      "rect": { "x": 482, "y": 414, "w": 318, "h": 46 },
+      "candidates": ["BOB CHECK", "ALICE RAISE 60", "BOB CALL 60", "ALICE BET 120", "BOB FOLD"]
+    }
+  ]
+}

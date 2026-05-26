@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pokervision"
+version = "0.1.0"
+description = "ROI-based poker broadcast hand-history reconstruction."
+requires-python = ">=3.10"
+dependencies = [
+  "numpy>=1.24",
+  "Pillow>=10.0",
+]
+
+[project.optional-dependencies]
+video = [
+  "opencv-python>=4.8",
+]
+ocr = [
+  "pytesseract>=0.3",
+]
+dev = [
+  "pytest>=8.0",
+]
+
+[project.scripts]
+pokervision = "pokervision.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["pokervision*"]
