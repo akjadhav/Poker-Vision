@@ -38,6 +38,24 @@ class TemplateMatcher:
 
     def match(self, image: Image.Image) -> MatchResult:
         target = image_to_array(image, self.size)
+        return self._match_array(target)
+
+    def match_region(self, image: Image.Image) -> MatchResult:
+        width, height = self.size
+        if image.width < width or image.height < height:
+            return self.match(image)
+
+        working = image.convert("RGB")
+        best = MatchResult("", -1.0)
+        for y in range(0, image.height - height + 1):
+            for x in range(0, image.width - width + 1):
+                crop = working.crop((x, y, x + width, y + height))
+                result = self.match(crop)
+                if result.score > best.score:
+                    best = result
+        return best
+
+    def _match_array(self, target: np.ndarray) -> MatchResult:
         best_label = ""
         best_score = -1.0
         for label, template in self.templates.items():
@@ -75,8 +93,11 @@ class CardRecognizer:
             templates[label] = Image.open(file_path).convert("RGB")
         return cls(TemplateMatcher(templates, card_size), min_score)
 
+    def best_match(self, image: Image.Image) -> MatchResult:
+        return self.matcher.match_region(image)
+
     def recognize(self, image: Image.Image) -> MatchResult | None:
-        result = self.matcher.match(image)
+        result = self.best_match(image)
         if result.score < self.min_score:
             return None
         return result

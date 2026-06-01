@@ -2,6 +2,8 @@
   "frame_step": 1,
   "min_card_score": 0.82,
   "min_text_score": 0.50,
+  "card_search_margin": 4,
+  "min_chip_delta": 120,
   "community": [
     { "name": "board_1", "rect": { "x": 442, "y": 286, "w": 72, "h": 100 } },
     { "name": "board_2", "rect": { "x": 526, "y": 286, "w": 72, "h": 100 } },
@@ -37,6 +39,25 @@
       "kind": "action",
       "rect": { "x": 482, "y": 414, "w": 318, "h": 46 },
       "candidates": ["BOB CHECK", "ALICE RAISE 60", "BOB CALL 60", "ALICE BET 120", "BOB FOLD"]
+    }
+  ],
+  "chips": [
+    {
+      "name": "alice_stack",
+      "kind": "player_stack",
+      "owner": "ALICE",
+      "rect": { "x": 198, "y": 512, "w": 72, "h": 82 }
+    },
+    {
+      "name": "bob_stack",
+      "kind": "player_stack",
+      "owner": "BOB",
+      "rect": { "x": 1010, "y": 512, "w": 72, "h": 82 }
+    },
+    {
+      "name": "pot_chips",
+      "kind": "pot",
+      "rect": { "x": 548, "y": 470, "w": 184, "h": 26 }
     }
   ]
 }

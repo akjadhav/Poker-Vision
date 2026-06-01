@@ -70,13 +70,17 @@ def street_for_board(board: list[str]) -> str:
 
 
 class HandStateTracker:
-    def __init__(self) -> None:
+    def __init__(self, min_chip_delta: int = 120) -> None:
         self.events: list[TimelineEvent] = []
         self.last_board: list[str] = []
         self.last_pot_text = ""
         self.last_action_text = ""
         self.last_player_cards: dict[str, list[str]] = {}
+        self.last_chip_levels: dict[str, int] | None = None
+        self.last_chip_owners: dict[str, str | None] = {}
+        self.last_chip_kinds: dict[str, str] = {}
         self.final_pot: int | None = None
+        self.min_chip_delta = min_chip_delta
 
     def process(self, observation: FrameObservation) -> None:
         board = observation.community_cards()
@@ -107,6 +111,62 @@ class HandStateTracker:
                 self.last_action_text = text
                 self._append(observation, "action", parse_action(text))
 
+        self._process_chips(observation)
+
+    def _process_chips(self, observation: FrameObservation) -> None:
+        if not observation.chips:
+            return
+
+        current = {detection.name: detection.chip_pixels for detection in observation.chips}
+        self.last_chip_owners = {detection.name: detection.owner for detection in observation.chips}
+        self.last_chip_kinds = {detection.name: detection.kind for detection in observation.chips}
+        if self.last_chip_levels is None:
+            self.last_chip_levels = current
+            return
+
+        pot_regions = [
+            name for name, kind in self.last_chip_kinds.items()
+            if kind == "pot"
+        ]
+        player_regions = [
+            name for name, kind in self.last_chip_kinds.items()
+            if kind == "player_stack"
+        ]
+        action = parse_action(self.last_action_text) if self.last_action_text else {}
+
+        for pot_region in pot_regions:
+            pot_delta = current.get(pot_region, 0) - self.last_chip_levels.get(pot_region, 0)
+            if pot_delta < self.min_chip_delta:
+                continue
+
+            source_region = None
+            source_delta = 0
+            for player_region in player_regions:
+                delta = current.get(player_region, 0) - self.last_chip_levels.get(player_region, 0)
+                if delta < source_delta:
+                    source_region = player_region
+                    source_delta = delta
+
+            if source_region is None or abs(source_delta) < self.min_chip_delta:
+                continue
+
+            source_owner = self.last_chip_owners.get(source_region) or source_region
+            self._append(
+                observation,
+                "chip_movement",
+                {
+                    "source": source_owner,
+                    "source_region": source_region,
+                    "target": pot_region,
+                    "visual_pot_delta_pixels": pot_delta,
+                    "visual_source_delta_pixels": source_delta,
+                    "action": action.get("action"),
+                    "amount": action.get("amount"),
+                },
+            )
+
+        self.last_chip_levels = current
+
     def _append(self, observation: FrameObservation, event_type: str, payload: dict[str, Any]) -> None:
         self.events.append(
             TimelineEvent(
@@ -124,6 +184,8 @@ class HandStateTracker:
                 "players": self.last_player_cards,
                 "final_pot": self.final_pot,
                 "street": street_for_board(self.last_board),
+                "chip_movements": len([event for event in self.events if event.type == "chip_movement"]),
+                "final_chip_pixels": self.last_chip_levels or {},
             },
             "events": [event.to_dict() for event in self.events],
         }

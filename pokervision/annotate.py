@@ -10,6 +10,7 @@ from .rendering import cached_font
 CARD_COLOR = (255, 213, 74)
 TEXT_COLOR = (101, 209, 255)
 PLAYER_COLOR = (126, 231, 135)
+CHIP_COLOR = (255, 152, 77)
 
 
 def annotate_frame(image: Image.Image, layout: LayoutConfig, observation: FrameObservation) -> Image.Image:
@@ -37,6 +38,15 @@ def annotate_frame(image: Image.Image, layout: LayoutConfig, observation: FrameO
         label = detection.text if detection else ""
         draw.rectangle(region.rect.to_box(), outline=TEXT_COLOR, width=3)
         draw_label(draw, region.rect.x, region.rect.y - 22, f"{region.name}: {label}", TEXT_COLOR, font)
+
+    chips_by_name = {item.name: item for item in observation.chips}
+    for region in layout.chips:
+        detection = chips_by_name.get(region.name)
+        pixels = detection.chip_pixels if detection else 0
+        owner = f"{region.owner} " if region.owner else ""
+        draw.rectangle(region.rect.to_box(), outline=CHIP_COLOR, width=3)
+        label_y = region.rect.y + region.rect.h + 4 if region.kind == "pot" else region.rect.y - 22
+        draw_label(draw, region.rect.x, label_y, f"{owner}{region.name}: {pixels}", CHIP_COLOR, font)
 
     return annotated
 

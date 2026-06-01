@@ -31,7 +31,7 @@ def run_pipeline(
         annotated_dir.mkdir(parents=True, exist_ok=True)
 
     analyzer = FrameAnalyzer(layout)
-    tracker = HandStateTracker()
+    tracker = HandStateTracker(min_chip_delta=layout.min_chip_delta)
     observations: list[FrameObservation] = []
     annotated_paths: list[Path] = []
     annotated_images = []

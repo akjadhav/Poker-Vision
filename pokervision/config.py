@@ -67,13 +67,34 @@ class TextRegion:
 
 
 @dataclass(frozen=True)
+class ChipRegion:
+    name: str
+    kind: str
+    rect: Rect
+    owner: str | None
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "ChipRegion":
+        owner = data.get("owner")
+        return cls(
+            str(data["name"]),
+            str(data.get("kind", data["name"])),
+            Rect.from_dict(data["rect"]),
+            str(owner) if owner is not None else None,
+        )
+
+
+@dataclass(frozen=True)
 class LayoutConfig:
     frame_step: int
     min_card_score: float
     min_text_score: float
+    card_search_margin: int
+    min_chip_delta: int
     community: list[CardSlot]
     players: list[PlayerConfig]
     texts: list[TextRegion]
+    chips: list[ChipRegion]
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "LayoutConfig":
@@ -81,9 +102,12 @@ class LayoutConfig:
             frame_step=max(1, int(data.get("frame_step", 1))),
             min_card_score=float(data.get("min_card_score", 0.82)),
             min_text_score=float(data.get("min_text_score", 0.50)),
+            card_search_margin=max(0, int(data.get("card_search_margin", 0))),
+            min_chip_delta=max(1, int(data.get("min_chip_delta", 120))),
             community=[CardSlot.from_dict(item) for item in data.get("community", [])],
             players=[PlayerConfig.from_dict(item) for item in data.get("players", [])],
             texts=[TextRegion.from_dict(item) for item in data.get("texts", [])],
+            chips=[ChipRegion.from_dict(item) for item in data.get("chips", [])],
         )
 
     @classmethod
@@ -96,6 +120,8 @@ class LayoutConfig:
             "frame_step": self.frame_step,
             "min_card_score": self.min_card_score,
             "min_text_score": self.min_text_score,
+            "card_search_margin": self.card_search_margin,
+            "min_chip_delta": self.min_chip_delta,
             "community": [
                 {"name": slot.name, "rect": slot.rect.to_dict()}
                 for slot in self.community
@@ -118,6 +144,15 @@ class LayoutConfig:
                     "candidates": text.candidates,
                 }
                 for text in self.texts
+            ],
+            "chips": [
+                {
+                    "name": chip.name,
+                    "kind": chip.kind,
+                    "rect": chip.rect.to_dict(),
+                    **({"owner": chip.owner} if chip.owner else {}),
+                }
+                for chip in self.chips
             ],
         }
 
